@@ -1,1 +1,5 @@
--e . 
+-e src/. 
+numpy
+scikit-learn
+ipykernel
+matplotlib
