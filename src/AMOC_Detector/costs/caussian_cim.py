@@ -19,3 +19,16 @@ def gaussian_mean_change(time_series: NDArray) -> NDArray:
         out[t] = t * (n - t) / n * np.sum((left - right) ** 2)
 
     return out
+
+def gaussian_variance_change(time_series: NDArray) -> NDArray:
+    x = np.asarray(time_series,dtype= float).reshape(len(time_series),-1)
+    n = len(x)
+    out = np.zeros(n)
+    cs = np.vstack((np.zeros(x.shape[1]), np.cumsum(x**2, axis = 0)))
+
+    for t in range(2,n-1):
+        left,right = cs[t] , (cs[n]-cs[t])
+        out[t] = n* np.log(cs[n]/n)- t* np.log(cs[t]/t) - (n-t)*np.log((cs[n]-cs[t])/(n-t))
+
+
+    

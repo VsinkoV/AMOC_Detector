@@ -1,27 +1,18 @@
-"""
-A kernel based method for detecting changepoints 
-
-
-"""
-
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.metrics import pairwise_distances
-from sklearn.metrics.pairwise import rbf_kernel as sklearn_rbf_kernel
+from sklearn.metrics.pairwise import laplacian_kernel as sklearn_laplacian_kernel
+from sklearn.metrics.pairwise import manhattan_distances
 
-
-def rbf_kernel(time_series: NDArray, length_scale: float | None = None) -> NDArray:
-    """
-    Kernel based reduction in cost from adding one changepoint
-    """
+def Laplacian_kernel(time_series: NDArray, length_scale: float | None = None) -> NDArray:
+    #Turn it from (n,) to (n,1)
     x = np.asarray(time_series, dtype=float).reshape(len(time_series), -1)
     n = len(x)
     out = np.zeros(n)
     if length_scale is None:
         length_scale = _median_heuristic(x)
-    gram = sklearn_rbf_kernel(x, gamma=1 / (2 * length_scale**2))
-    
-    #Here we sum together all the values in our gram matrix for simplicities sake
+    gram = sklearn_laplacian_kernel(x, gamma=1 / length_scale)
+        #Here we sum together all the values in our gram matrix for simplicities sake
     cumulative = gram.cumsum(axis=0).cumsum(axis=1)
     total_cost = np.trace(gram) - gram.sum() / n
 
@@ -34,9 +25,6 @@ def rbf_kernel(time_series: NDArray, length_scale: float | None = None) -> NDArr
         out[t] = total_cost - left_cost - right_cost
 
     return out
-
-
-#This is necessary as it allows to ensures correct callobration
 
 def _median_heuristic(time_series: NDArray) -> float:
     """Median of the non-zero pairwise Euclidean distances."""
