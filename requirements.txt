@@ -4,3 +4,9 @@ scikit-learn
 ipykernel
 matplotlib
 tqdm
+pandas
+scipy
+statsmodels
+arch
+ruptures
+yfinance
