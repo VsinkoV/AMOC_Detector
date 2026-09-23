@@ -1,21 +1,17 @@
-"""
-A kernel based method for detecting changepoints
-"""
-
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.metrics import pairwise_distances
-from sklearn.metrics.pairwise import rbf_kernel as sklearn_rbf_kernel
+from sklearn.metrics.pairwise import polynomial_kernel as sklearn_polynomial_kernel
 
 
-def rbf_kernel(time_series: NDArray, length_scale: float | None = None) -> NDArray:
+def polynomial_kernel(time_series: NDArray, length_scale: float | None = None,
+                      degree: int = 3, coef0: float = 1.0) -> NDArray:
     """
     Kernel based reduction in cost from adding one changepoint.
 
-    Vectorised: the previous loop recomputed gram.sum() and sliced the Gram
-    matrix on every iteration, making it cubic in n. Prefix sums of the Gram
-    matrix and of its diagonal give every segment cost in O(1), so the whole
-    curve is O(n^2), dominated by building the Gram matrix itself.
+    Vectorised in the same way as the RBF cost: prefix sums of the Gram
+    matrix and of its diagonal replace the per-iteration slicing and
+    gram.sum() calls, taking the curve from cubic to quadratic in n.
     Numerically identical to the previous version.
     """
     x = np.asarray(time_series, dtype=float).reshape(len(time_series), -1)
@@ -23,9 +19,9 @@ def rbf_kernel(time_series: NDArray, length_scale: float | None = None) -> NDArr
     out = np.zeros(n)
     if length_scale is None:
         length_scale = _median_heuristic(x)
-    gram = sklearn_rbf_kernel(x, gamma=1 / (2 * length_scale ** 2))
+    gram = sklearn_polynomial_kernel(x, gamma=1 / (2 * length_scale ** 2),
+                                     degree=degree, coef0=coef0)
 
-    # 2-D prefix sums of the Gram matrix, and 1-D prefix sums of its diagonal
     cumulative = np.zeros((n + 1, n + 1))
     cumulative[1:, 1:] = gram.cumsum(axis=0).cumsum(axis=1)
     diag_cs = np.concatenate(([0.0], np.cumsum(np.diag(gram))))
@@ -44,8 +40,6 @@ def rbf_kernel(time_series: NDArray, length_scale: float | None = None) -> NDArr
 
     return out
 
-
-# This is necessary as it allows to ensure correct calibration
 
 def _median_heuristic(time_series: NDArray) -> float:
     """Median of the non-zero pairwise Euclidean distances."""

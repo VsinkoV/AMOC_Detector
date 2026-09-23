@@ -2,8 +2,9 @@ from .detector import Detector
 from .costs.caussian_cim import gaussian_mean_change
 from .costs.RBF import rbf_kernel, _median_heuristic as median_heuristic
 from .costs.laplacian_kernel import Laplacian_kernel
-from .costs.caussian_cim import gaussian_variance_change
-from .costs.kfdr import kfdr
+from .costs.caussian_cim import gaussian_variance_change, gaussian_meanvar_change
+from .costs.kfdr import kfdr, kfdr_curve
+from .costs.polynomial_kernel import polynomial_kernel
 
 __all__ = [
     "Detector",
@@ -12,5 +13,8 @@ __all__ = [
     "median_heuristic",
     "Laplacian_kernel",
     "gaussian_variance_change",
-    "kfdr"
+    "gaussian_meanvar_change",
+    "kfdr",
+    "kfdr_curve",
+    "polynomial_kernel"
 ]
